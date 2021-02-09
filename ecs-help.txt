@@ -1,0 +1,109 @@
+-----------AWS CLI----------------- 
+
+apt-get update 
+
+apt install unzip
+
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+
+unzip awscliv2.zip
+
+sudo ./aws/install
+
+aws --version
+
+//////////////////////////////////////////////////////////////////
+
+
+----------ECS CLI-------------------
+
+sudo curl -Lo /usr/local/bin/ecs-cli https://amazon-ecs-cli.s3.amazonaws.com/ecs-cli-linux-amd64-latest
+
+sudo chmod +x /usr/local/bin/ecs-cli
+
+ecs-cli --version
+
+///////////////////////////////////////////////
+
+------------- ECS CLI CONFIGURATION------------------
+
+ecs-cli configure --cluster abcd --default-launch-type EC2 --config-name myconfig --region ap-south-1
+
+ecs-cli configure profile --access-key AKIASQYIMZQIXJMQUUFG --secret-key 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 --profile-name myprofile
+
+ecs-cli up --keypair ubuntu --capability-iam --size 1 --instance-type t2.medium --cluster-config myconfig --ecs-profile myprofile
+
+
+/////////////////////////////////////////////////////
+
+---------- CREATE COMPOSE FILE ------------------------
+
+docker-compose.yml
+
+
+version: '3'
+services:
+  web:
+       image: amanbrar2313/web:1
+       volumes:
+           - abc:/usr/src/app/
+       ports:
+         - "8000:8000"
+       logging:
+         driver: awslogs
+         options:
+            awslogs-group: abcd
+            awslogs-region: ap-south-1
+            awslogs-stream-prefix: web
+
+  nginx:
+       image: amanbrar2313/nginx:1
+       volumes:
+           - abc:/usr/src/app/
+       ports:
+         - "80:80"
+       links:
+         - web
+       logging:
+          driver: awslogs
+          options:
+             awslogs-group: abcd
+             awslogs-region: ap-south-1
+             awslogs-stream-prefix: nginx
+
+volumes:
+  abc:
+
+---------------------- CREATE ECS_PARAMS FILE------------------------
+
+ecs-params.yml
+
+
+version: 1
+task_definition:
+  services:
+    web:
+      cpu_shares: 100
+      mem_limit: 524288000
+    nginx:
+      cpu_shares: 100
+      mem_limit: 524288000
+
+  data_volumes:
+    - name: abc
+      scope: "shared"
+      autoprovision: true
+
+
+
+////////////////////////////////////////////////////
+
+ecs-cli compose up --create-log-groups --cluster-config myconfig --ecs-profile myprofile
+
+ecs-cli compose down --cluster-config myconfig --ecs-profile myprofile
+
+ecs-cli ps --cluster-config myconfig --ecs-profile myprofile
+
+ecs-cli down --force --cluster-config myconfig --ecs-profile myprofile
+
+

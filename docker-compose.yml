@@ -1,0 +1,37 @@
+version: '3.7'
+
+services:
+
+  web:
+
+    build: ./app
+
+    volumes:
+
+      - static:/usr/src/app
+
+    ports:
+
+      - "8000:8000"
+
+  nginx:
+
+    build: ./nginx
+
+    volumes:
+
+      - static:/usr/src/app
+
+    ports:
+
+      - "80:80"
+
+    depends_on:
+
+      - web
+
+volumes:
+
+  static:
+
+
