@@ -183,8 +183,9 @@ server {
 		proxy_pass http://hello;
 	}
 
-	location /static/ {
-		alias /static/;
+	location ^/static/ {
+                autoindex on;
+		alias /usr/src/app;
 	}
 }
 

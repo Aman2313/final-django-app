@@ -29,9 +29,9 @@ ecs-cli --version
 
 ecs-cli configure --cluster abcd --default-launch-type EC2 --config-name myconfig --region ap-south-1
 
-ecs-cli configure profile --access-key AKIASQYIMZQIXJMQUUFG --secret-key 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 --profile-name myprofile
+ecs-cli configure profile --access-key (WRITE_ACCESS_KEY) --secret-key (SECRET_KEY) --profile-name myprofile
 
-ecs-cli up --keypair ubuntu --capability-iam --size 1 --instance-type t2.medium --cluster-config myconfig --ecs-profile myprofile
+ecs-cli up --keypair (KEY_PAIR_NAME) --capability-iam --size 1 --instance-type t2.medium --cluster-config myconfig --ecs-profile myprofile
 
 
 /////////////////////////////////////////////////////
