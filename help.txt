@@ -185,7 +185,7 @@ server {
 
 	location ^/static/ {
                 autoindex on;
-		alias /usr/src/app;
+		root /usr/src/app;
 	}
 }
 
@@ -281,4 +281,77 @@ tag docker images
 
  
 ////////////////////////////////////////////////////////////
+
+Adding healthcheck script for Application load balancer
+
+
+This middleware is used to handle requests to the /ping/ URL before ALLOWED_HOSTS is checked. 
+
+======= Why is this necessary? ==========
+
+The health check request comes from the EC2 instance. 
+
+Since we don't know the private IP beforehand, 
+
+this will ensure that the /ping/ route always returns a 
+
+successful response even after we restrict ALLOWED_HOSTS
+
+
+-----------Add middleware to app/hello/middleware.py-------------------
+
+
+from django.http import HttpResponse
+from django.utils.deprecation import MiddlewareMixin
+
+
+class HealthCheckMiddleware(MiddlewareMixin):
+    def process_request(self, request):
+        if request.META['PATH_INFO'] == '/ping/':
+            return HttpResponse('pong!')
+
+
+
+
+--------- Add the class to the middleware config in settings.py -----------
+
+MIDDLEWARE = [
+
+    'hello_django.middleware.HealthCheckMiddleware',  # new ---- ADD THIS LINE ONLY --------
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+
+It's worth noting that you could toss Nginx in front of Gunicorn and handle the health check in the Nginx config like so
+
+--------------- CHANGE IN NGINX DEFAULT.CONF FILE --------------
+
+location /ping/ {
+    
+        access_log off;
+        return 200;
+}
+
+
+---------------------------------------------------------------------
+
+Make sure http://localhost(vm-ip):8000/ping/ ------ works as expected:
+
+
+pong!
+
+
+/////////////////////////////////////////////////////////////////////////////
+
+NOW tag and push container images to Docker Hub again ....
+
+use these updated images .
+
+/////////////////////////////////////////////////////////////////////////////
 
